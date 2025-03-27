@@ -1,6 +1,7 @@
 import pandas as pd
-import numpy as np
-from datetime import datetime, timedelta
+from openpyxl import load_workbook
+from openpyxl.styles import NamedStyle
+from datetime import datetime
 
 # サンプルデータの作成
 data = {
@@ -41,10 +42,43 @@ data = {
 # DataFrameの作成
 df = pd.DataFrame(data)
 
-# Excelファイルとして保存
-df.to_excel('employee_data.xlsx', index=False)
+# 給与で降順ソート
+df = df.sort_values(by='salary', ascending=False)
 
-# SELECT文の生成
+# Excelに保存 (pandas → openpyxl)
+file_path = 'employee_data.xlsx'
+df.to_excel(file_path, index=False)
+
+# ---- openpyxl でフォーマット・ソート機能を追加 ----
+
+from openpyxl import load_workbook
+
+# Excelを読み込み
+wb = load_workbook(file_path)
+ws = wb.active
+
+# ✅ オートフィルタを設定 (ソート機能)
+ws.auto_filter.ref = ws.dimensions
+
+# ✅ ユーザー定義のフォーマット設定
+# 通貨フォーマット（¥マーク付き）
+currency_format = '¥#,##0'
+
+# 日付フォーマット（yyyy-mm-dd）
+date_format = 'yyyy-mm-dd'
+
+# 給与列のフォーマット (B2 から B10)
+for cell in ws['E'][1:]:  # E列 = 給与
+    cell.number_format = currency_format
+
+# 入社日列のフォーマット (F2 から F10)
+for cell in ws['F'][1:]:  # F列 = 入社日
+    cell.number_format = date_format
+
+# 保存
+wb.save(file_path)
+
+# ✅ SELECT文の生成
 select_sql = """
 SELECT 
     employee_id AS 従業員ID,
@@ -62,6 +96,8 @@ ORDER BY
     salary DESC;
 """
 
-# SQLファイルとして保存
+# ✅ SQLファイルとして保存
 with open('select_query.sql', 'w', encoding='utf-8') as f:
     f.write(select_sql)
+
+print("ExcelファイルとSQLファイルを生成しました。")
