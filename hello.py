@@ -101,3 +101,6 @@ with open('select_query.sql', 'w', encoding='utf-8') as f:
     f.write(select_sql)
 
 print("ExcelファイルとSQLファイルを生成しました。")
+
+#featureブランチでのコメント
+#developブランチでのコメント
